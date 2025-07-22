@@ -7,6 +7,8 @@ import { ResponseInterceptor } from 'src/utils/intercepter/response.intercepter'
 import { CategoriesModule } from 'src/modules/categories/categories.module';
 import { LeaguesModule } from 'src/modules/leagues/leagues.module';
 import { TeamsModule } from 'src/modules/teams/teams.module';
+import { UserModule } from 'src/modules/user/user.module';
+import { AuthModule } from 'src/modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { TeamsModule } from 'src/modules/teams/teams.module';
     CategoriesModule,
     LeaguesModule,
     TeamsModule,
+    UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [

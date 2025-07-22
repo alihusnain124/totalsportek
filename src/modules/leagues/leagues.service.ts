@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { League } from './entities/league.entity';
@@ -11,6 +11,8 @@ export class LeaguesService {
   constructor(@InjectRepository(League) private readonly leagueRepository: Repository<League>) {}
   async createLeague(createLeagueDto: CreateLeagueDto): Promise<{ message: string }> {
     try {
+      const isLeagueExist = await this.leagueRepository.findOne({ where: { leagueName: createLeagueDto.leagueName } });
+      if (isLeagueExist) throw new ConflictException('League already exist');
       const { leagueName, logoUrl } = createLeagueDto;
       const category = this.leagueRepository.create({ leagueName, logoUrl });
       await this.leagueRepository.save(category);
@@ -43,9 +45,13 @@ export class LeaguesService {
 
   async updateLeague(payload: IdDTO, updateLeagueDto: UpdateLeagueDto): Promise<{ message: string }> {
     try {
-      await this.getSingleLeagueDetails(payload);
+      const leagueDetails = await this.getSingleLeagueDetails(payload);
       const { leagueName, logoUrl } = updateLeagueDto;
-      await this.leagueRepository.update(payload.id, { leagueName, logoUrl });
+      const isLeagueExists = await this.leagueRepository.findOne({ where: { leagueName } });
+      if (isLeagueExists) throw new ConflictException('League already exists');
+      leagueDetails.leagueName = leagueName;
+      leagueDetails.logoUrl = logoUrl;
+      await this.leagueRepository.save(leagueDetails);
       return { message: 'League updated successfully' };
     } catch (error) {
       throw error;
@@ -56,7 +62,7 @@ export class LeaguesService {
     try {
       await this.getSingleLeagueDetails(payload);
       await this.leagueRepository.delete(payload.id);
-      return { message: 'Category deleted successfully' };
+      return { message: 'League deleted successfully' };
     } catch (error) {
       throw error;
     }

@@ -20,7 +20,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
         return {
           statusCode,
           message: responseMessage,
-          data: isEmpty ? undefined : response,
+          data: isEmpty ? undefined : rest,
         };
       }),
     );

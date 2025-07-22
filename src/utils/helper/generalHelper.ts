@@ -1,10 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiResponseOptions } from '@nestjs/swagger';
-import {
-  registerDecorator,
-  ValidationArguments,
-  ValidationOptions,
-} from 'class-validator';
+import { registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
 
 export function createApiResponse(
   status: HttpStatus,
@@ -44,9 +40,7 @@ export function createApiResponse(
 
 export const formatErrorTitle = (fieldName: string): string => {
   if (!fieldName || typeof fieldName !== 'string') {
-    console.warn(
-      `Invalid field name provided to formatErrorTitle: ${fieldName}`,
-    );
+    console.warn(`Invalid field name provided to formatErrorTitle: ${fieldName}`);
     return 'Invalid Field';
   }
 
@@ -68,11 +62,7 @@ export function AtLeastOneLocationField(validationOptions?: ValidationOptions) {
       validator: {
         validate(_: any, args: ValidationArguments) {
           const { projectAddress, mapData, customLinks } = args.object as any;
-          return !!(
-            projectAddress ||
-            mapData?.length > 0 ||
-            customLinks?.length > 0
-          );
+          return !!(projectAddress || mapData?.length > 0 || customLinks?.length > 0);
         },
         defaultMessage() {
           return `At least one of the fields 'projectAddress', 'mapData', or 'customLinks' must be provided. `;

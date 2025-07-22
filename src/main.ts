@@ -9,6 +9,7 @@ async function bootstrap() {
 
   app.enableCors();
   app.useGlobalFilters(new GlobalExceptionFilter());
+
   app.getHttpAdapter().get('/health', (req, res) => {
     res.status(HttpStatus.OK).json({
       statusCode: HttpStatus.OK,

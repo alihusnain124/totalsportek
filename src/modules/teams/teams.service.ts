@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IdDTO } from '../categories/dto/create-category.dto';
@@ -12,6 +12,8 @@ export class TeamsService {
   async createTeam(createTeamDto: CreateTeamDto): Promise<{ message: string }> {
     try {
       const { teamName, logoUrl } = createTeamDto;
+      const isTeamExists = await this.teamRepository.findOne({ where: { teamName } });
+      if (isTeamExists) throw new ConflictException('Team already exists');
       const category = this.teamRepository.create({ teamName, logoUrl });
       await this.teamRepository.save(category);
       return { message: 'Team created successfully' };
@@ -43,9 +45,13 @@ export class TeamsService {
 
   async updateTeam(payload: IdDTO, updateTeamDto: UpdateTeamDto): Promise<{ message: string }> {
     try {
-      await this.getSingleTeamDetails(payload);
+      const teamDetails = await this.getSingleTeamDetails(payload);
       const { teamName, logoUrl } = updateTeamDto;
-      await this.teamRepository.update(payload.id, { teamName, logoUrl });
+      const isTeamExists = await this.teamRepository.findOne({ where: { teamName } });
+      if (isTeamExists) throw new ConflictException('Team already exists');
+      teamDetails.teamName = teamName;
+      teamDetails.logoUrl = logoUrl;
+      await this.teamRepository.save(teamDetails);
       return { message: 'Team updated successfully' };
     } catch (error) {
       throw error;
