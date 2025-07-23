@@ -5,16 +5,22 @@ import { League } from './entities/league.entity';
 import { CreateLeagueDto } from './dto/create-league.dto';
 import { IdDTO } from '../categories/dto/create-category.dto';
 import { UpdateLeagueDto } from './dto/update-league.dto';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class LeaguesService {
-  constructor(@InjectRepository(League) private readonly leagueRepository: Repository<League>) {}
+  constructor(
+    @InjectRepository(League) private readonly leagueRepository: Repository<League>,
+    @InjectRepository(Category) private readonly categoryRepository: Repository<Category>,
+  ) {}
   async createLeague(createLeagueDto: CreateLeagueDto): Promise<{ message: string }> {
     try {
       const isLeagueExist = await this.leagueRepository.findOne({ where: { leagueName: createLeagueDto.leagueName } });
       if (isLeagueExist) throw new ConflictException('League already exist');
-      const { leagueName, logoUrl } = createLeagueDto;
-      const category = this.leagueRepository.create({ leagueName, logoUrl });
+      const { leagueName, logoUrl, isTopLeague, categoryId } = createLeagueDto;
+      const isCategoryExists = await this.categoryRepository.findOne({ where: { id: categoryId } });
+      if (!isCategoryExists) throw new NotFoundException('Category not found');
+      const category = this.leagueRepository.create({ leagueName, logoUrl, isTopLeague, category: { id: categoryId } });
       await this.leagueRepository.save(category);
       return { message: 'League created successfully' };
     } catch (error) {
@@ -25,7 +31,66 @@ export class LeaguesService {
 
   async getAllLeagues(): Promise<League[]> {
     try {
-      return await this.leagueRepository.find();
+      return await this.leagueRepository.find({
+        relations: ['category'],
+        select: {
+          id: true,
+          leagueName: true,
+          logoUrl: true,
+          isTopLeague: true,
+          category: {
+            id: true,
+            categoryName: true,
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getLeagueSpecificEvents(payload: IdDTO): Promise<League> {
+    try {
+      return await this.leagueRepository.findOne({
+        where: { id: payload.id },
+        relations: ['categoryEvents.eventTeam.firstTeam', 'categoryEvents.eventTeam.secondTeam'],
+        select: {
+          id: true,
+          leagueName: true,
+          logoUrl: true,
+          categoryEvents: {
+            id: true,
+            dateOfEvent: true,
+            eventTime: true,
+            eventTeam: {
+              id: true,
+              firstTeam: { id: true, teamName: true, logoUrl: true },
+              secondTeam: { id: true, teamName: true, logoUrl: true },
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getTopLeagues(): Promise<League[]> {
+    try {
+      return await this.leagueRepository.find({
+        where: { isTopLeague: true },
+        relations: ['category'],
+        select: {
+          id: true,
+          leagueName: true,
+          logoUrl: true,
+          isTopLeague: true,
+          category: {
+            id: true,
+            categoryName: true,
+          },
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -51,6 +116,7 @@ export class LeaguesService {
       if (isLeagueExists) throw new ConflictException('League already exists');
       leagueDetails.leagueName = leagueName;
       leagueDetails.logoUrl = logoUrl;
+      leagueDetails.isTopLeague = updateLeagueDto.isTopLeague;
       await this.leagueRepository.save(leagueDetails);
       return { message: 'League updated successfully' };
     } catch (error) {

@@ -40,6 +40,20 @@ export class TeamsController {
     return await this.teamsService.getAllTeams();
   }
 
+  @Get('/get-top-teams')
+  @ApiOkResponse(createApiResponse(HttpStatus.OK, 'Teams retrieved successfully'))
+  @ApiNotFoundResponse(createApiResponse(HttpStatus.NOT_FOUND, 'Team not found'))
+  async getTopTeams(): Promise<Team[]> {
+    return await this.teamsService.getTopTeams();
+  }
+
+  @Get('/:id/get-team-specific-events')
+  @ApiOkResponse(createApiResponse(HttpStatus.OK, 'Team specific events retrieved successfully'))
+  @ApiNotFoundResponse(createApiResponse(HttpStatus.NOT_FOUND, 'Team not found'))
+  async getTeamSpecificEvents(@Param() payload: IdDTO): Promise<Team> {
+    return await this.teamsService.getTeamSpecificEvents(payload);
+  }
+
   @Patch(':id/update-team')
   @ApiBearerAuth()
   @ApiOkResponse(createApiResponse(HttpStatus.OK, 'Team updated successfully'))

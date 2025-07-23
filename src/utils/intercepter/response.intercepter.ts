@@ -11,7 +11,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
 
         const statusCode = response?.statusCode || HttpStatus.OK;
         httpResponse.status(statusCode);
-
+        // console.log(response);
         const responseMessage = response?.message || 'Success.';
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { message, status, ...rest } = response || {};
@@ -20,7 +20,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, any> {
         return {
           statusCode,
           message: responseMessage,
-          data: isEmpty ? undefined : rest,
+          data: isEmpty ? undefined : response,
         };
       }),
     );

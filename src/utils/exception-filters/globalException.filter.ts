@@ -12,6 +12,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       const errorResponse = exception.getResponse();
       errors = errorResponse['errors'];
+      // console.log('Error Response:', errorResponse);
       if (typeof errorResponse === 'string') {
         message = errorResponse;
       } else if (typeof errorResponse === 'object' && errorResponse['message']) {

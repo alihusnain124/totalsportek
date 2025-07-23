@@ -30,14 +30,96 @@ export class CategoriesService {
     }
   }
 
-  async getSingleCategoryDetails(payload: IdDTO): Promise<Category> {
+  async getSingleCategoryDetails(payload: IdDTO): Promise<any> {
     try {
-      const category = await this.categoryRepository.findOne({ where: { id: payload.id } });
+      const category = await this.categoryRepository.find({
+        where: { id: payload.id },
+        relations: [
+          'categoryEvents',
+          'categoryEvents.league',
+          'categoryEvents.eventTeam',
+          'categoryEvents.eventTeam.firstTeam',
+          'categoryEvents.eventTeam.secondTeam',
+        ],
+      });
       if (!category) throw new NotFoundException('Category not found');
-      return category;
+      return this.formatCategoryDetails(category);
     } catch (error) {
       throw error;
     }
+  }
+
+  private formatCategoryDetails(categoryDetails: Category[]): any {
+    return categoryDetails.map((category) => {
+      const leagueMap = new Map<string, any>();
+      const noLeagueEvents: any[] = [];
+
+      category.categoryEvents.forEach((event) => {
+        const league = event.league;
+
+        if (league) {
+          if (!leagueMap.has(league.id)) {
+            leagueMap.set(league.id, {
+              leagueId: league.id,
+              leagueName: league.leagueName,
+              logoUrl: league.logoUrl,
+              events: [],
+            });
+          }
+
+          leagueMap.get(league.id).events.push({
+            id: event.id,
+            dateOfEvent: event.dateOfEvent,
+            eventTime: event.eventTime,
+            teams: {
+              firstTeam: {
+                id: event.eventTeam.firstTeam.id,
+                teamName: event.eventTeam.firstTeam.teamName,
+                logoUrl: event.eventTeam.firstTeam.logoUrl,
+              },
+              secondTeam: {
+                id: event.eventTeam.secondTeam.id,
+                teamName: event.eventTeam.secondTeam.teamName,
+                logoUrl: event.eventTeam.secondTeam.logoUrl,
+              },
+            },
+          });
+        } else {
+          noLeagueEvents.push({
+            id: event.id,
+            dateOfEvent: event.dateOfEvent,
+            eventTime: event.eventTime,
+            teams: {
+              firstTeam: {
+                id: event.eventTeam.firstTeam.id,
+                teamName: event.eventTeam.firstTeam.teamName,
+                logoUrl: event.eventTeam.firstTeam.logoUrl,
+              },
+              secondTeam: {
+                id: event.eventTeam.secondTeam.id,
+                teamName: event.eventTeam.secondTeam.teamName,
+                logoUrl: event.eventTeam.secondTeam.logoUrl,
+              },
+            },
+          });
+        }
+      });
+
+      const groupedEvents = [...leagueMap.values()];
+
+      if (noLeagueEvents.length > 0) {
+        groupedEvents.push({
+          noLeague: true,
+          events: noLeagueEvents,
+        });
+      }
+
+      return {
+        id: category.id,
+        categoryName: category.categoryName,
+        groupedEvents,
+      };
+    });
   }
 
   async updateCategory(payload: IdDTO, updateCategoryDto: UpdateCategoryDto): Promise<{ message: string }> {

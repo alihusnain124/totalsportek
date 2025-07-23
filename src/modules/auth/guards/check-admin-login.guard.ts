@@ -9,7 +9,7 @@ export class CheckAdminLoginGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
     try {
-      if (!authHeader || !authHeader.startsWith('Bearer ')) throw new UnauthorizedException('Missing or malformed token');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) throw new UnauthorizedException('Unauthorized access');
       const token = authHeader.split(' ')[1];
       const payload = await this.VerifyToken(token);
       request.user = payload;

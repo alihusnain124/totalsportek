@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateTeamDto {
   @ApiProperty({
@@ -11,6 +11,11 @@ export class CreateTeamDto {
   @MaxLength(50, { message: 'Max length of teamName is 50' })
   @IsNotEmpty({ message: 'teamName is required' })
   teamName: string;
+
+  @ApiProperty({ example: true, description: 'is top team', required: true })
+  @IsNotEmpty({ message: 'isTopTeam is required' })
+  @IsBoolean()
+  isTopTeam: boolean;
 
   @ApiProperty({
     type: 'string',

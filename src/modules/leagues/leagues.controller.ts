@@ -39,6 +39,20 @@ export class LeaguesController {
     return await this.leaguesService.getAllLeagues();
   }
 
+  @Get('/get-top-leagues')
+  @ApiOkResponse(createApiResponse(HttpStatus.OK, 'Leagues retrieved successfully'))
+  @ApiNotFoundResponse(createApiResponse(HttpStatus.NOT_FOUND, 'League not found'))
+  async getTopLeagues(): Promise<League[]> {
+    return await this.leaguesService.getTopLeagues();
+  }
+
+  @Get('/:id/get-league-specific-events')
+  @ApiOkResponse(createApiResponse(HttpStatus.OK, 'Leagues specific events retrieved successfully'))
+  @ApiNotFoundResponse(createApiResponse(HttpStatus.NOT_FOUND, 'League not found'))
+  async getLeagueSpecificEvents(@Param() payload: IdDTO): Promise<League> {
+    return await this.leaguesService.getLeagueSpecificEvents(payload);
+  }
+
   @Patch(':id/update-league')
   @ApiBearerAuth()
   @ApiOkResponse(createApiResponse(HttpStatus.OK, 'League updated successfully'))
