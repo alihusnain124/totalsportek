@@ -52,7 +52,8 @@ export class UserController {
   @ApiNotFoundResponse(createApiResponse(HttpStatus.NOT_FOUND, 'Admin User not found'))
   @UseGuards(CheckAdminLoginGuard)
   @UsePipes(FormValidationPipe)
-  async removeTeam(@Param() payload: IdDTO): Promise<{ message: string }> {
-    return this.userService.removeUser(payload);
+  async removeTeam(@Req() requestWithUser: RequestWithUser, @Param() payload: IdDTO): Promise<{ message: string }> {
+    const { id } = requestWithUser.user;
+    return this.userService.removeUser(id, payload);
   }
 }

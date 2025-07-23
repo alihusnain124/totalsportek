@@ -6,7 +6,7 @@ import * as jwt from 'jsonwebtoken';
 @Injectable()
 export class AuthService {
   constructor(private readonly userService: UserService) {}
-  async adminLogin(adminLoginDto: AdminLoginDto): Promise<{ token: string; message: string }> {
+  async adminLogin(adminLoginDto: AdminLoginDto): Promise<{ token: string }> {
     try {
       return await this.userService.loginAdminUser(adminLoginDto.email, adminLoginDto.password);
     } catch (error) {

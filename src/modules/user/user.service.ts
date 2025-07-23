@@ -45,8 +45,9 @@ export class UserService {
       throw error;
     }
   }
-  async removeUser(payload: IdDTO): Promise<{ message: string }> {
+  async removeUser(ownId: string, payload: IdDTO): Promise<{ message: string }> {
     try {
+      if (ownId === payload.id) throw new BadRequestException('You cannot remove yourself');
       await this.getSingleUserDetails(payload);
       await this.userRepository.delete(payload.id);
       return { message: 'Admin user deleted successfully' };
@@ -55,7 +56,7 @@ export class UserService {
     }
   }
 
-  async loginAdminUser(email: string, password: string): Promise<{ message: string; token: string }> {
+  async loginAdminUser(email: string, password: string): Promise<{ token: string }> {
     try {
       const user = await this.userRepository.findOne({ where: { email } });
       if (!user) throw new NotFoundException('Admin user not found');
@@ -64,7 +65,7 @@ export class UserService {
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
         expiresIn: '1h',
       });
-      return { token, message: 'Admin user logged in successfully' };
+      return { token };
     } catch (error) {
       throw error;
     }

@@ -25,7 +25,14 @@ export class TeamsService {
 
   async getAllTeams(): Promise<Team[]> {
     try {
-      return await this.teamRepository.find();
+      return await this.teamRepository.find({
+        select: {
+          id: true,
+          teamName: true,
+          logoUrl: true,
+          isTopTeam: true,
+        },
+      });
     } catch (error) {
       throw error;
     }
@@ -33,7 +40,10 @@ export class TeamsService {
 
   async getTopTeams(): Promise<Team[]> {
     try {
-      return await this.teamRepository.find({ where: { isTopTeam: true } });
+      return await this.teamRepository.find({
+        where: { isTopTeam: true },
+        select: { id: true, teamName: true, logoUrl: true, isTopTeam: true },
+      });
     } catch (error) {
       throw error;
     }

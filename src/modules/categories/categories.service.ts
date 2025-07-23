@@ -24,7 +24,12 @@ export class CategoriesService {
 
   async getAllCategories(): Promise<Category[]> {
     try {
-      return await this.categoryRepository.find();
+      return await this.categoryRepository.find({
+        select: {
+          id: true,
+          categoryName: true,
+        },
+      });
     } catch (error) {
       throw error;
     }

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import databaseConfig from 'src/config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,6 +10,8 @@ import { TeamsModule } from 'src/modules/teams/teams.module';
 import { UserModule } from 'src/modules/user/user.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { CategoriesEventModule } from 'src/modules/categories-event/categories-event.module';
+import { DataSource } from 'typeorm';
+import AdminSeeder from 'src/database/seeder/admin.seeder';
 
 @Module({
   imports: [
@@ -38,4 +40,16 @@ import { CategoriesEventModule } from 'src/modules/categories-event/categories-e
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  private readonly logger = new Logger(AppModule.name);
+  constructor(private dataSource: DataSource) {}
+
+  async onModuleInit() {
+    try {
+      const adminSeeder = new AdminSeeder();
+      await adminSeeder.run(this.dataSource);
+    } catch (error) {
+      this.logger.error('Error executing seeders during module initialization:', error);
+    }
+  }
+}

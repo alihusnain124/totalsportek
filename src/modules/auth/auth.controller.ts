@@ -16,7 +16,7 @@ export class AuthController {
   @ApiNotFoundResponse(createApiResponse(HttpStatus.NOT_FOUND, 'User not found'))
   @ApiBody({ type: AdminLoginDto })
   @UsePipes(FormValidationPipe)
-  async adminLogin(@Body() adminLoginDto: AdminLoginDto): Promise<{ token: string; message: string }> {
+  async adminLogin(@Body() adminLoginDto: AdminLoginDto): Promise<{ token: string }> {
     return this.authService.adminLogin(adminLoginDto);
   }
 }

@@ -22,22 +22,64 @@ export class CategoriesEventService {
 
     try {
       const { dateOfEvent, timeOfEvent, categoryId, leagueId, firstTeamId, secondTeamId } = createCategoriesEventDto;
-      const category = await queryRunner.manager.findOne(Category, { where: { id: categoryId } });
+
+      if (firstTeamId === secondTeamId) {
+        throw new BadRequestException('Both teams must be different');
+      }
+
+      const category = await queryRunner.manager.findOne(Category, {
+        where: { id: categoryId },
+      });
       if (!category) throw new NotFoundException('Category not found');
 
-      const league = await queryRunner.manager.findOne(League, { where: { id: leagueId } });
-      if (!league) throw new NotFoundException('League not found');
+      if (leagueId) {
+        const league = await queryRunner.manager.findOne(League, {
+          where: { id: leagueId, category: { id: categoryId } },
+          relations: ['category'],
+        });
+        if (!league) throw new BadRequestException('League and category not linked');
+      }
 
-      const isLeagueAndCategoryLinked = await queryRunner.manager.findOne(League, {
-        where: { id: leagueId, category: { id: categoryId } },
+      const firstTeam = await queryRunner.manager.findOne(Team, {
+        where: { id: firstTeamId },
       });
-      if (!isLeagueAndCategoryLinked) throw new BadRequestException('League and category not linked');
-
-      const firstTeam = await queryRunner.manager.findOne(Team, { where: { id: firstTeamId } });
       if (!firstTeam) throw new NotFoundException('First team not found');
 
-      const secondTeam = await queryRunner.manager.findOne(Team, { where: { id: secondTeamId } });
+      const secondTeam = await queryRunner.manager.findOne(Team, {
+        where: { id: secondTeamId },
+      });
       if (!secondTeam) throw new NotFoundException('Second team not found');
+
+      const existingEvent = await queryRunner.manager
+        .createQueryBuilder(CategoriesEvent, 'event')
+        .innerJoin('event.eventTeam', 'eventTeam')
+        .where('event.dateOfEvent = :dateOfEvent', { dateOfEvent })
+        .andWhere('event.eventTime = :eventTime', { eventTime: timeOfEvent })
+        .andWhere(
+          '(eventTeam.firstTeam = :firstTeam AND eventTeam.secondTeam = :secondTeam) OR (eventTeam.firstTeam = :secondTeam AND eventTeam.secondTeam = :firstTeam)',
+          { firstTeam: firstTeamId, secondTeam: secondTeamId },
+        )
+        .getOne();
+
+      if (existingEvent) {
+        throw new BadRequestException('Match already scheduled between these two teams at this time');
+      }
+
+      const conflictMatch = await queryRunner.manager
+        .getRepository(EventTeam)
+        .createQueryBuilder('et')
+        .innerJoin('et.event', 'event')
+        .where('event.dateOfEvent = :date', { date: dateOfEvent })
+        .andWhere('event.eventTime = :time', { time: timeOfEvent })
+        .andWhere(
+          '(et.firstTeam = :firstTeamId OR et.secondTeam = :firstTeamId OR et.firstTeam = :secondTeamId OR et.secondTeam = :secondTeamId)',
+          { firstTeamId, secondTeamId },
+        )
+        .getOne();
+
+      if (conflictMatch) {
+        throw new BadRequestException('One or both teams already have a match scheduled at this time');
+      }
 
       const event = queryRunner.manager.create(CategoriesEvent, {
         dateOfEvent,
@@ -45,13 +87,17 @@ export class CategoriesEventService {
         category: { id: categoryId },
         league: { id: leagueId },
       });
-      const savedEvent = await queryRunner.manager.save(event);
+
+      const savedEvent = await queryRunner.manager.save(CategoriesEvent, event);
+
       const eventTeam = queryRunner.manager.create(EventTeam, {
         event: { id: savedEvent.id },
         firstTeam: { id: firstTeamId },
         secondTeam: { id: secondTeamId },
       });
-      await queryRunner.manager.save(eventTeam);
+
+      await queryRunner.manager.save(EventTeam, eventTeam);
+
       await queryRunner.commitTransaction();
       return { message: 'Event created successfully' };
     } catch (error) {
@@ -61,6 +107,7 @@ export class CategoriesEventService {
       await queryRunner.release();
     }
   }
+
   async getEventDetails(payload: IdDTO): Promise<CategoriesEvent> {
     try {
       const eventDetails = await this.categoriesEventRepository.findOne({
