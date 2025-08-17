@@ -1,7 +1,8 @@
+import { Blog } from 'src/modules/blog/entities/blog.entity';
 import { CategoriesEvent } from 'src/modules/categories-event/entities/categories-event.entity';
 import { League } from 'src/modules/leagues/entities/league.entity';
 import { BaseEntity } from 'src/utils/entity/base.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 
 @Entity({ name: 'categories' })
 export class Category extends BaseEntity {
@@ -13,4 +14,7 @@ export class Category extends BaseEntity {
 
   @OneToMany(() => CategoriesEvent, (catEvent) => catEvent.category, { onDelete: 'CASCADE' })
   categoryEvents: CategoriesEvent[];
+
+  @ManyToMany(() => Blog, (blog) => blog.categories)
+  blogs: Blog[];
 }

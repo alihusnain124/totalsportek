@@ -63,7 +63,7 @@ export class UserService {
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) throw new BadRequestException('Password is incorrect');
       const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
-        expiresIn: '1h',
+        expiresIn: '30d',
       });
       return { token };
     } catch (error) {

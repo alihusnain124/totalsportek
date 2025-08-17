@@ -33,4 +33,8 @@ export class CreateCategoriesEventDto {
   @IsNotEmpty()
   @Matches(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, { message: 'timeOfEvent must be in HH:mm:ss format' })
   timeOfEvent: string;
+
+  @ApiProperty({ description: 'stream_url', example: 'https://example.com/event.mp4', required: false })
+  @IsOptional()
+  streamUrl?: string;
 }

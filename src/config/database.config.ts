@@ -13,7 +13,6 @@ export default (configService: ConfigService): DataSourceOptions => ({
   entities: [__dirname + '/../**/*.entity.{js,ts}'],
   // entities: ['dist/**/*.entity{.ts,.js}'],
   // entities: ['src/**/*.entity{.ts,.js}'],
-  migrationsRun: false,
   // migrations: ['dist/database/migrations/*{.ts,.js}'],
   // migrations: ['src/database/migrations/*{.ts,.js}'],
   migrations: [`${__dirname}/../database/migrations/*.{ts,js}`],

@@ -3,7 +3,8 @@ import { AppModule } from './app/app.module';
 import { HttpStatus } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from './utils/exception-filters/globalException.filter';
-
+import { join } from 'path';
+import * as express from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -16,6 +17,7 @@ async function bootstrap() {
       message: 'Hello from App!. System is healthy state',
     });
   });
+  app.use('/public', express.static(join(__dirname, '..', 'public')));
   const config = new DocumentBuilder()
     .setTitle('TotalSportek Documentation')
     .setDescription('TotalSportek API description')

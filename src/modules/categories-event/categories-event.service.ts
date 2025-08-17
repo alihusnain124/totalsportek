@@ -8,6 +8,7 @@ import { League } from '../leagues/entities/league.entity';
 import { Category } from '../categories/entities/category.entity';
 import { IdDTO } from '../categories/dto/create-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UpdateCategoriesEventDto } from './dto/update-categories-event.dto';
 
 @Injectable()
 export class CategoriesEventService {
@@ -21,7 +22,7 @@ export class CategoriesEventService {
     await queryRunner.startTransaction();
 
     try {
-      const { dateOfEvent, timeOfEvent, categoryId, leagueId, firstTeamId, secondTeamId } = createCategoriesEventDto;
+      const { dateOfEvent, timeOfEvent, categoryId, leagueId, firstTeamId, secondTeamId, streamUrl } = createCategoriesEventDto;
 
       if (firstTeamId === secondTeamId) {
         throw new BadRequestException('Both teams must be different');
@@ -83,6 +84,7 @@ export class CategoriesEventService {
 
       const event = queryRunner.manager.create(CategoriesEvent, {
         dateOfEvent,
+        streamUrl,
         eventTime: timeOfEvent,
         category: { id: categoryId },
         league: { id: leagueId },
@@ -117,6 +119,7 @@ export class CategoriesEventService {
           id: true,
           dateOfEvent: true,
           eventTime: true,
+          streamUrl: true,
           category: {
             id: true,
             categoryName: true,
@@ -142,6 +145,22 @@ export class CategoriesEventService {
       });
       if (!eventDetails) throw new NotFoundException('Event not found');
       return eventDetails;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateStreamUrl(payload: IdDTO, updateCategoriesEventDto: UpdateCategoriesEventDto): Promise<{ message: string }> {
+    try {
+      const event = await this.categoriesEventRepository.findOne({ where: { id: payload.id } });
+      if (!event) throw new NotFoundException('Event not found');
+
+      if (updateCategoriesEventDto.streamUrl) {
+        event.streamUrl = updateCategoriesEventDto.streamUrl;
+        await this.categoriesEventRepository.save(event);
+      }
+
+      return { message: 'URL updated successfully' };
     } catch (error) {
       throw error;
     }

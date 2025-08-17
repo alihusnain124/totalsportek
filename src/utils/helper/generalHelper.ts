@@ -71,3 +71,43 @@ export function AtLeastOneLocationField(validationOptions?: ValidationOptions) {
     });
   };
 }
+
+export function buildPaginatedResponse<T>(data: T[], { page = 1, limit = 10, total }: PaginationMeta): PaginatedResponse<T> {
+  const limitNumber = Number(limit);
+  const totalPages = Number(Math.ceil(total / limitNumber));
+  const currentPage = Number(page);
+  const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+  const previousPage = currentPage > 1 ? currentPage - 1 : null;
+
+  return {
+    collection: data,
+    meta: {
+      currentPage: currentPage,
+      nextPage: nextPage,
+      previousPage: previousPage,
+      limit: limitNumber,
+      totalCount: total,
+      totalPages: totalPages,
+    },
+  };
+}
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+}
+
+export interface PaginatedMetaResponse {
+  currentPage: number;
+  nextPage: number | null;
+  previousPage: number | null;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+export interface PaginatedResponse<T> {
+  collection: T[];
+  meta: PaginatedMetaResponse;
+}

@@ -12,6 +12,9 @@ export class CategoriesEvent extends BaseEntity {
   @Column({ type: 'time', name: 'event_time', nullable: false })
   eventTime: string;
 
+  @Column({ type: 'varchar', name: 'stream_url', nullable: true })
+  streamUrl?: string;
+
   @ManyToOne(() => Category, (category) => category.categoryEvents, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'category_id' })
   category: Category;

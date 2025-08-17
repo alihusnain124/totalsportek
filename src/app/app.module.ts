@@ -12,6 +12,7 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { CategoriesEventModule } from 'src/modules/categories-event/categories-event.module';
 import { DataSource } from 'typeorm';
 import AdminSeeder from 'src/database/seeder/admin.seeder';
+import { BlogModule } from 'src/modules/blog/blog.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import AdminSeeder from 'src/database/seeder/admin.seeder';
     UserModule,
     AuthModule,
     CategoriesEventModule,
+    BlogModule,
   ],
   controllers: [],
   providers: [
