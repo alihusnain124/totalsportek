@@ -53,7 +53,7 @@ export const formatErrorTitle = (fieldName: string): string => {
 };
 
 export function AtLeastOneLocationField(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'atLeastOneLocationField',
       target: object.constructor,

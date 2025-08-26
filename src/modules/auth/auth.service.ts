@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { UserService } from '../user/user.service';
 import * as jwt from 'jsonwebtoken';
-
 @Injectable()
 export class AuthService {
   constructor(private readonly userService: UserService) {}
