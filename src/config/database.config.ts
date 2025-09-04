@@ -17,7 +17,5 @@ export default (configService: ConfigService): DataSourceOptions => ({
   // migrations: ['src/database/migrations/*{.ts,.js}'],
   migrations: [`${__dirname}/../database/migrations/*.{ts,js}`],
   synchronize: false,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: process.env.NODE_ENV === 'dev' ? false : { rejectUnauthorized: false },
 });

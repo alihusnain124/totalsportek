@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  backend:
+    build: .
+    container_name: nest-backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: totalsportek
+      NODE_ENV: dev
+      SERVER_URL: http://localhost:5000
+      JWT_SECRET: aass2+3>-gr
+  db:
+    image: postgres:13.22-trixie
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: totalsportek
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
